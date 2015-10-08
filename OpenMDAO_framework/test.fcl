@@ -1,0 +1,93 @@
+FUNCTION_BLOCK test
+
+	#comments use "#" symbol
+	#comments go here
+	 
+    VAR_INPUT
+        Weight_VLsys:     REAL; (* RANGE(1 .. 9) *)
+        Weight_VLprop:    REAL; (* RANGE(1 .. 9) *)
+        Weight_VLdrive:	  REAL; (* RANGE(1 .. 9) *)
+    END_VAR
+ 
+    VAR_OUTPUT
+        Weight_OUT: REAL; (* RANGE(1 .. 9) *)
+        Weight_OUT2: REAL; (* RANGE(1 .. 9) *)
+   END_VAR
+ 
+    FUZZIFY Weight_VLsys
+    	TERM VeryLow := (1,0) (1,1) (3,0) ;
+        TERM Low := (1, 0) (3, 1) (5, 0) ;
+        TERM Med := (3, 0) (5, 1) (7, 0) ;
+        TERM High := (5, 0) (7, 1) (9, 0) ;
+        TERM VeryHigh := (7,0) (9,1) (9,0) ;
+    END_FUZZIFY
+    
+    FUZZIFY Weight_VLprop
+    	TERM VeryLow := (1,0) (1,1) (3,0) ;
+        TERM Low := (1, 0) (3, 1) (5, 0) ;
+        TERM Med := (3, 0) (5, 1) (7, 0) ;
+        TERM High := (5, 0) (7, 1) (9, 0) ;
+        TERM VeryHigh := (7,0) (9,1) (9,0) ;
+    END_FUZZIFY
+    
+    FUZZIFY Weight_VLdrive
+    	TERM VeryLow := (1,0) (1,1) (3,0) ;
+        TERM Low := (1, 0) (3, 1) (5, 0) ;
+        TERM Med := (3, 0) (5, 1) (7, 0) ;
+        TERM High := (5, 0) (7, 1) (9, 0) ;
+        TERM VeryHigh := (7,0) (9,1) (9,0) ;
+    END_FUZZIFY
+ 
+    DEFUZZIFY Weight_OUT
+    	TERM VeryLow := (1,0) (1,1) (3,0) ;
+        TERM Low := (1, 0) (3, 1) (5, 0) ;
+        TERM Med := (3, 0) (5, 1) (7, 0) ;
+        TERM High := (5, 0) (7, 1) (9, 0) ;
+        TERM VeryHigh := (7,0) (9,1) (9,0) ;
+        ACCU:MAX;
+        METHOD: COGS;(*MoM;*)
+        DEFAULT := 0; 
+    END_DEFUZZIFY
+    
+    #test output
+    DEFUZZIFY Weight_OUT2
+    	# TERM VeryLow := (1,1) (1,1) (3,0) ;
+        TERM Low := (1,0) (1, 1) (3, 1) (4, 0) ;
+        TERM Med := (2,0) (3, 1) (7, 1) (8, 0) ;
+        TERM High := (6, 0) (7, 1) (9, 1) (9, 0)
+        # TERM VeryHigh := (7,0) (9,1) (9,1) ;
+        ACCU:MAX;
+        METHOD: COGS;(*MoM;*)
+        DEFAULT := 0; 
+    END_DEFUZZIFY
+ 
+    RULEBLOCK
+        AND:MIN;
+        OR:MAX;
+        ACT:MIN;
+        (*ACCU:MAX;*)
+        
+        RULE 0:   IF (Weight_VLsys IS VeryHigh) AND (Weight_VLprop IS VeryHigh) AND (Weight_VLdrive IS VeryHigh)                       		THEN (Weight_OUT IS VeryHigh);
+        RULE 1:   IF ((Weight_VLsys IS VeryHigh) OR  (Weight_VLprop IS VeryHigh) OR  (Weight_VLdrive IS VeryHigh)) AND (Weight_VLsys IS High) 	THEN (Weight_OUT IS VeryHigh);
+	  	RULE 2:   IF ((Weight_VLsys IS VeryHigh) OR  (Weight_VLprop IS VeryHigh) OR  (Weight_VLdrive IS VeryHigh)) AND (Weight_VLprop IS High) 	THEN (Weight_OUT IS VeryHigh);
+	  	RULE 3:   IF ((Weight_VLsys IS VeryHigh) OR  (Weight_VLprop IS VeryHigh) OR  (Weight_VLdrive IS VeryHigh)) AND (Weight_VLdrive IS High) THEN (Weight_OUT IS VeryHigh);
+	  	RULE 4:   IF (Weight_VLsys IS High) AND  (Weight_VLprop IS High) AND  (Weight_VLdrive IS High) THEN (Weight_OUT IS High);
+        RULE 5:   IF ((Weight_VLsys IS High) OR (Weight_VLprop IS High) OR (Weight_VLdrive IS High)) AND ((Weight_VLsys ISNOT Low) OR (Weight_VLprop ISNOT Low) OR (Weight_VLdrive ISNOT Low)) AND ((Weight_VLsys ISNOT VeryLow) OR (Weight_VLprop ISNOT VeryLow) OR (Weight_VLdrive ISNOT VeryLow)) THEN (Weight_OUT IS High);
+	  	RULE 6:   IF (Weight_VLsys IS Med) AND (Weight_VLprop IS Med) AND  (Weight_VLdrive IS Med) THEN (Weight_OUT IS Med);
+	  	RULE 7:   IF (Weight_VLsys IS Low) AND (Weight_VLprop IS Low) AND  (Weight_VLdrive IS Low) THEN (Weight_OUT IS Low);
+	  	RULE 8:   IF (Weight_VLsys IS VeryLow) AND  (Weight_VLprop IS VeryLow) AND  (Weight_VLdrive IS VeryLow) THEN (Weight_OUT IS VeryLow);
+
+        RULE 20:   IF (Weight_VLsys IS VeryHigh) AND (Weight_VLprop IS VeryHigh) AND (Weight_VLdrive IS VeryHigh)                       		THEN (Weight_OUT2 IS High);
+        RULE 21:   IF ((Weight_VLsys IS VeryHigh) OR  (Weight_VLprop IS VeryHigh) OR  (Weight_VLdrive IS VeryHigh)) AND (Weight_VLsys IS High) 	THEN (Weight_OUT2 IS High);
+	  	RULE 22:   IF ((Weight_VLsys IS VeryHigh) OR  (Weight_VLprop IS VeryHigh) OR  (Weight_VLdrive IS VeryHigh)) AND (Weight_VLprop IS High) 	THEN (Weight_OUT2 IS High);
+	  	RULE 23:   IF ((Weight_VLsys IS VeryHigh) OR  (Weight_VLprop IS VeryHigh) OR  (Weight_VLdrive IS VeryHigh)) AND (Weight_VLdrive IS High) THEN (Weight_OUT2 IS High);
+	  	RULE 24:   IF (Weight_VLsys IS High) AND  (Weight_VLprop IS High) AND  (Weight_VLdrive IS High) THEN (Weight_OUT2 IS High);
+        RULE 25:   IF ((Weight_VLsys IS High) OR (Weight_VLprop IS High) OR (Weight_VLdrive IS High)) AND ((Weight_VLsys ISNOT Low) OR (Weight_VLprop ISNOT Low) OR (Weight_VLdrive ISNOT Low)) AND ((Weight_VLsys ISNOT VeryLow) OR (Weight_VLprop ISNOT VeryLow) OR (Weight_VLdrive ISNOT VeryLow)) THEN (Weight_OUT2 IS High);
+	  	RULE 26:   IF (Weight_VLsys IS Med) AND (Weight_VLprop IS Med) AND  (Weight_VLdrive IS Med) THEN (Weight_OUT2 IS Med);
+	  	RULE 27:   IF (Weight_VLsys IS Low) AND (Weight_VLprop IS Low) AND  (Weight_VLdrive IS Low) THEN (Weight_OUT2 IS Low);
+	  	RULE 28:   IF (Weight_VLsys IS VeryLow) AND  (Weight_VLprop IS VeryLow) AND  (Weight_VLdrive IS VeryLow) THEN (Weight_OUT2 IS Low);
+
+
+    END_RULEBLOCK
+ 
+END_FUNCTION_BLOCK

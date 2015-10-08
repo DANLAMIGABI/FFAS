@@ -1,0 +1,64 @@
+FUNCTION_BLOCK test
+
+	#comments use "#" symbol
+	#comments go here
+	 
+    VAR_INPUT
+        SYSTEM_f:     REAL; (* RANGE(1 .. 9) *)
+        WING_LoD:    REAL; (* RANGE(5 .. 25) *)
+    END_VAR
+ 
+    VAR_OUTPUT
+        sys_LoD: REAL; (* RANGE(5 .. 25) *)
+   END_VAR
+ 
+    FUZZIFY WING_LoD
+    	TERM VeryLow := (0, 0) (5, 1) (10, 0) ;
+        TERM Low :=     (5, 0) (10, 1) (15, 0) ;
+        TERM Med := (10, 0) (15, 1) (20, 0) ;
+        TERM High := (15, 0) (20, 1) (25, 0) ;
+        TERM VeryHigh := (20,0) (25,1) (30,0) ;
+    END_FUZZIFY
+    
+    FUZZIFY SYSTEM_f
+        TERM Poor := (-2.2, 0) (1, 1) (4.2, 0) ;
+        TERM Med := (1.8, 0) (5, 1) (8.2, 0) ;
+        TERM Good := (5.8, 0) (9, 1) (12.2, 0) ;
+    END_FUZZIFY
+ 
+    DEFUZZIFY sys_LoD
+    	TERM VeryLow := (1, 0) (5, 1) (9, 1) (13, 0) ;
+        TERM Low :=     (5, 0) (9, 1) (13, 1) (17, 0) ;
+        TERM Med := (9, 0) (13, 1) (17, 1) (21, 0) ;
+        TERM High := (13, 0) (17, 1) (21, 1) (25, 0) ;
+        TERM VeryHigh := (17, 0) (21, 1) (25, 1) (29, 0) ;
+        ACCU:MAX;
+        METHOD: COGS;(*MoM;*)
+        DEFAULT := 0; 
+    END_DEFUZZIFY
+    
+
+ 
+    RULEBLOCK
+        AND:MIN;
+        OR:MAX;
+        ACT:MIN;
+        (*ACCU:MAX;*)
+        
+        RULE 1:   IF (WING_LoD IS VeryLow) AND (SYSTEM_f IS Poor) OR (SYSTEM_f IS Med) OR (SYSTEM_f IS Good) THEN (sys_LoD IS VeryLow)   
+        RULE 2:   IF (WING_LoD IS Low) AND (SYSTEM_f IS Poor) THEN (sys_LoD IS VeryLow)  
+        RULE 3:   IF (WING_LoD IS Low) AND (SYSTEM_f IS Med) THEN (sys_LoD IS Low)
+        RULE 4:   IF (WING_LoD IS Low) AND (SYSTEM_f IS Good) THEN (sys_LoD IS Low)
+        RULE 5:   IF (WING_LoD IS Med) AND (SYSTEM_f IS Poor) THEN (sys_LoD IS Low)
+        RULE 6:   IF (WING_LoD IS Med) AND (SYSTEM_f IS Med) THEN (sys_LoD IS Med)
+        RULE 7:   IF (WING_LoD IS Med) AND (SYSTEM_f IS Good) THEN (sys_LoD IS Med)
+        RULE 8:   IF (WING_LoD IS High) AND (SYSTEM_f IS Poor) THEN (sys_LoD IS Med)
+        RULE 9:  IF (WING_LoD IS High) AND (SYSTEM_f IS Med) THEN (sys_LoD IS Med)
+        RULE 10:  IF (WING_LoD IS High) AND (SYSTEM_f IS Good) THEN (sys_LoD IS High)
+        RULE 11:  IF (WING_LoD IS VeryHigh) AND (SYSTEM_f IS Poor) THEN (sys_LoD IS High)
+        RULE 12:  IF (WING_LoD IS VeryHigh) AND (SYSTEM_f IS Med) THEN (sys_LoD IS High)
+        RULE 13:  IF (WING_LoD IS VeryHigh) AND (SYSTEM_f IS Good) THEN (sys_LoD IS VeryHigh)
+
+    END_RULEBLOCK
+ 
+END_FUNCTION_BLOCK

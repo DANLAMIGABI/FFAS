@@ -1,0 +1,3 @@
+graft src/mydriver/sphinx_build/html
+recursive-include src/mydriver/test *.py
+

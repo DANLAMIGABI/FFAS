@@ -1,0 +1,72 @@
+FUNCTION_BLOCK test
+
+	#comments use "#" symbol
+	#comments go here
+	 
+    VAR_INPUT
+        FWD_SYS_eta_p:    REAL; (* RANGE(0.6 .. 1.0) *)
+        FWD_DRV_eta_d:     REAL; (* RANGE(0.5 .. 1.0) *)
+    END_VAR
+ 
+    VAR_OUTPUT
+        sys_etaP: REAL; (* RANGE(0.6 .. 1.0) *)
+   END_VAR
+ 
+    FUZZIFY FWD_SYS_eta_p
+        #TERM Low      := (0.60, 0) (0.60, 1) (0.73, 1) (0.78, 0) ;
+        #TERM Med      := (0.68, 0) (0.73, 1) (0.87, 1) (0.92, 0) ;
+        #TERM High     := (0.82, 0) (0.87, 1) (1.00, 1) (1.00, 0) ;
+        TERM VeryLow  := (0.60, 0) (0.65, 1) (0.70, 0) ;
+        TERM Low      := (0.65, 0) (0.74, 1) (0.83, 0) ;
+        TERM Med      := (0.70, 0) (0.80, 1) (0.90, 0) ;
+        TERM High     := (0.85, 0) (0.90, 1) (0.95, 0) ;
+        TERM VeryHigh := (0.92, 0) (0.97, 1) (1.1, 0) ;
+    END_FUZZIFY
+    
+    FUZZIFY FWD_DRV_eta_d
+        #TERM Low      := (0.50, 0) (0.50, 1) (0.78, 1) (0.84, 0) ;
+        #TERM Med      := (0.72, 0) (0.78, 1) (0.90, 1) (0.94, 0) ;
+        #TERM High     := (0.86, 0) (0.90, 1) (1.00, 1) (1.00, 0) ;
+        TERM Low      := (0.50, 0) (0.70, 1) (0.84, 0) ;
+        TERM Med      := (0.72, 0) (0.84, 1) (0.94, 0) ;
+        TERM High     := (0.86, 0) (0.95, 1) (1.00, 0) ;
+    END_FUZZIFY
+
+ 
+    DEFUZZIFY sys_etaP
+    	TERM VeryLow  := (0.30, 0) (0.30, 1) (0.65, 1) (0.70, 0) ;
+        TERM Low      := (0.55, 0) (0.60, 1) (0.75, 1) (0.80, 0) ;
+        TERM Med      := (0.71, 0) (0.75, 1) (0.89, 1) (0.93, 0) ;
+        TERM High     := (0.85, 0) (0.89, 1) (0.95, 1) (0.99, 0) ;
+        TERM VeryHigh := (0.91, 0) (0.95, 1) (1.00, 1) (1.00, 0) ;
+        ACCU:MAX;
+        METHOD: COGS;(*MoM;*)
+        DEFAULT := 0; 
+    END_DEFUZZIFY
+    
+
+ 
+    RULEBLOCK
+        AND:MIN;
+        OR:MAX;
+        ACT:MIN;
+        (*ACCU:MAX;*)
+        
+        RULE 1:   IF (FWD_DRV_eta_d IS Low) THEN (sys_etaP IS VeryLow)  
+        RULE 2:   IF (FWD_DRV_eta_d IS Med) AND (FWD_SYS_eta_p IS VeryLow) THEN (sys_etaP IS VeryLow)  
+        RULE 3:   IF (FWD_DRV_eta_d IS Med) AND (FWD_SYS_eta_p IS Low) THEN (sys_etaP IS VeryLow)   
+        RULE 4:   IF (FWD_DRV_eta_d IS Med) AND (FWD_SYS_eta_p IS Med) THEN (sys_etaP IS Low) 
+        RULE 5:   IF (FWD_DRV_eta_d IS Med) AND (FWD_SYS_eta_p IS High) THEN (sys_etaP IS Med) 
+        RULE 6:   IF (FWD_DRV_eta_d IS Med) AND (FWD_SYS_eta_p IS VeryHigh) THEN (sys_etaP IS High) 
+        RULE 7:   IF (FWD_DRV_eta_d IS High) AND (FWD_SYS_eta_p IS VeryLow) THEN (sys_etaP IS VeryLow) 
+        RULE 8:   IF (FWD_DRV_eta_d IS High) AND (FWD_SYS_eta_p IS Low) THEN (sys_etaP IS Low) 
+        RULE 9:   IF (FWD_DRV_eta_d IS High) AND (FWD_SYS_eta_p IS Med) THEN (sys_etaP IS Med) 
+        RULE 10:  IF (FWD_DRV_eta_d IS High) AND (FWD_SYS_eta_p IS High) THEN (sys_etaP IS High) 
+        RULE 10:  IF (FWD_DRV_eta_d IS High) AND (FWD_SYS_eta_p IS VeryHigh) THEN (sys_etaP IS VeryHigh) 
+ 
+
+
+
+    END_RULEBLOCK
+ 
+END_FUNCTION_BLOCK
