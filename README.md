@@ -7,3 +7,5 @@ as well as functions for their training and deployment into a multi-disciplinary
 This version is available publicly here in support of my dissertation. 
 
 The core module pieces still need some cleaning and added documention. 
+
+This is a VERY raw project.
